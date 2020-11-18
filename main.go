@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+var lifeIp []string
+var deadIp []string
+
 func ping(ip ...string) {
 
 	// c - sending count ECHO_REQUEST packets
@@ -17,22 +20,45 @@ func ping(ip ...string) {
 	// Only super-user may set interval to values less than 0.2 seconds
 	// w - deadline Specify a timeout, in seconds, before ping exits regardless of how
 	// many packets have been sent or received.
-	fmt.Printf("ip array : %s", ip[3]) //dedug out
-	
-	out, _ := exec.Command("ping", ip[3], "-c 2", "-i 1", "-w 2").Output()
-
-	fmt.Println(string(string(out))) //dedug out
-
-	if strings.Contains(string(out), "2 received") {
-		fmt.Println("Yeap, I'am ALIVEEE")
-	} else {
-		fmt.Println("Dead Mother Fucker")
-	}
 
 	for _, val := range ip {
-		fmt.Println(val)
+
+		fmt.Printf("ip array : %s", val) //dedug out
+
+		out, _ := exec.Command("ping", val, "-c 2", "-i 1", "-w 2").Output()
+
+		fmt.Println(string(string(out))) //dedug out
+
+		if strings.Contains(string(out), "2 received") {
+			fmt.Println("Yeap, I'am ALIVEEE")
+			lifeIp = append(lifeIp, val)
+		} else {
+			fmt.Println("Dead Mother Fucker")
+			deadIp = append(deadIp, val)
+		}
 	}
 
+	fmt.Println(lifeIp) //dedug out
+	fmt.Printf("\n")    //dedug out
+	fmt.Println(deadIp) //dedug out
+
+}
+
+func saveIpFile() {
+	file, err := os.OpenFile("lifeIp.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+	if err != nil {
+		log.Fatalf("file not create : %s", err)
+	}
+
+	datawriter := bufio.NewWriter(file)
+
+	for _, val := range lifeIp {
+		datawriter.WriteString(val)
+		datawriter.WriteString("\n")
+	}
+
+	datawriter.Flush()
+	file.Close()
 }
 
 func main() {
@@ -61,11 +87,9 @@ func main() {
 
 	file.Close()
 
-	// for _, val := range iplines {
-	// 	fmt.Println(val)
-	// }
-
 	ping(iplines...)
+
+	saveIpFile()
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
