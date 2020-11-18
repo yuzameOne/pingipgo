@@ -23,25 +23,16 @@ func ping(ip ...string) {
 
 	for _, val := range ip {
 
-		fmt.Printf("ip array : %s", val) //dedug out
-
 		out, _ := exec.Command("ping", val, "-c 2", "-i 1", "-w 2").Output()
 
-		fmt.Println(string(string(out))) //dedug out
-
 		if strings.Contains(string(out), "2 received") {
-			fmt.Println("Yeap, I'am ALIVEEE")
+			fmt.Printf("Yeap, I'am ALIVEEE : %s \n", val)
 			lifeIp = append(lifeIp, val)
 		} else {
-			fmt.Println("Dead Mother Fucker")
+			fmt.Printf("Dead Mother Fucker : %s \n", val)
 			deadIp = append(deadIp, val)
 		}
 	}
-
-	fmt.Println(lifeIp) //dedug out
-	fmt.Printf("\n")    //dedug out
-	fmt.Println(deadIp) //dedug out
-
 }
 
 func saveIpFile() {
@@ -53,17 +44,16 @@ func saveIpFile() {
 	datawriter := bufio.NewWriter(file)
 
 	for _, val := range lifeIp {
-		datawriter.WriteString(val)
-		datawriter.WriteString("\n")
+		datawriter.WriteString(val + "\n")
 	}
 
 	datawriter.Flush()
 	file.Close()
+
+	os.Exit(3)
 }
 
 func main() {
-
-	fmt.Println("start server\n")
 
 	file, err := os.Open("iplist.txt")
 
