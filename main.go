@@ -12,6 +12,7 @@ import (
 
 var lifeIp []string
 var deadIp []string
+var iplines []string
 
 func ping(ip ...string) {
 
@@ -23,12 +24,14 @@ func ping(ip ...string) {
 
 	for _, val := range ip {
 
-		out, _ := exec.Command("ping", val, "-c 2", "-i 1", "-w 2").Output()
+		out, _ := exec.Command("ping", val, "-c 3", "-i 1", "-w 10").Output()
 
-		if strings.Contains(string(out), "2 received") {
+		fmt.Println(string(out))
+
+		if strings.Contains(string(out), "3 received") {
 			fmt.Printf("Yeap, I'am ALIVEEE : %s \n", val)
 			lifeIp = append(lifeIp, val)
-		} else {
+		} else if strings.Contains(string(out), "0 received") {
 			fmt.Printf("Dead Mother Fucker : %s \n", val)
 			deadIp = append(deadIp, val)
 		}
@@ -55,22 +58,17 @@ func saveIpFile() {
 
 func main() {
 
-	file, err := os.Open("iplist.txt")
+	// arg := os.Args[:]
+
+	file, err := os.Open("ip.txt")
 
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
 	}
 
-	// bufio.NewScanner() передаем прочитанный файл
-	// bufio.ScanLines читает файл до спецсимволов "\n , \r"
-	// scanner.Split разделяет строки по спецсимволам "\n , \r"
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
-	var iplines []string
-
-	// Scan() перемещаемся  по файлу по строкам
-	//	добавляем  строки по строчно в слайс строк
 	for scanner.Scan() {
 		iplines = append(iplines, scanner.Text())
 	}
